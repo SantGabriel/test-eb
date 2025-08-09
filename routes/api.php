@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\BalanceController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\ResetController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/reset', function () {
-    return response()->json('OKidokey', 200);
-});
+Route::post('/reset', [ResetController::class, 'reset']);
+Route::get('/balance', [BalanceController::class, 'getBalance']);
+Route::post('/event', [EventController::class, 'event']);

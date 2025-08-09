@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    image: api-test-image
+    container_name: api-test-container
+    ports:
+      - "8000:80"
+    volumes:
+      - ../.:/var/www/html

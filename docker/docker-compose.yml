@@ -7,3 +7,8 @@ services:
       - "8000:80"
     volumes:
       - ../.:/var/www/html
+    environment:
+      XDEBUG_MODE: debug
+      XDEBUG_CLIENT_HOST: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

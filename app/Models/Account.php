@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
+
 class Account 
 {
     private $id;
@@ -11,6 +13,11 @@ class Account
     {
         $this->id = $id;
         $this->balance = $balance;
+    }
+
+    public static function loadById($id) : Account|null {
+        $data = DB::table('account')->where('id', $id)->first();
+        return self::load( (array) $data);
     }
 
     public static function load($data) : Account|null
@@ -32,5 +39,19 @@ class Account
     public function getBalance() : float
     {
         return $this->balance;
+    }
+
+    public function addToBalance(float $amount) {
+        $this->balance = round($this->balance,2) + round($amount,2); 
+        $this->balance = round($this->balance,2);    
+    }
+
+    public function subtractFromBalance(float $amount) {
+        $this->balance = round($this->balance,2) - round($amount,2); 
+        $this->balance = round($this->balance,2);  
+    }
+
+    public function toArray() {
+        return get_object_vars($this);
     }
 }

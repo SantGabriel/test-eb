@@ -25,7 +25,7 @@ class EventService
         }
     }
 
-    private function depositEvent(float $amount, int $destination) : Account {        
+    private function depositEvent(float $amount, string $destination) : Account {        
         $exists = Account::exists($destination);
         if ($exists) {
             DB::table('account')
@@ -42,9 +42,9 @@ class EventService
         }
     }
 
-    private function withdrawEvent(float $amount, int $origin): Account|false {    
+    private function withdrawEvent(float $amount, string $origin): Account|false {    
         $exists = Account::exists($origin, true);
-        if($exists) return false;
+        if(!$exists) return false;
         DB::table('account')
                 ->where('id', $origin)
                 ->update(['balance' => DB::raw('balance - ' . $amount)]);
@@ -54,11 +54,11 @@ class EventService
     /**
      * @return array{originAccount:Account,destinationAccount:Account}
      */
-    private function transferEvent(float $amount, int $origin, int $destination): array|false {
+    private function transferEvent(float $amount, string $origin, string $destination): array|false {
         return DB::transaction(function () use ($amount, $origin, $destination) {       
             $originAccountExists = Account::exists($origin);
             $destinationAccountExists = Account::exists($destination);
-            if(!isset($originAccountExists) || !isset($destinationAccountExists)) return false;
+            if(!$originAccountExists || !$destinationAccountExists) return false;
  
             DB::table('account')
                     ->where('id', $destination)

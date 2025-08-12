@@ -6,7 +6,7 @@ use App\Models\Account;
 
 class BalanceService
 {
-    public function getBalance($id)
+    public function getBalance(string $id)
     {
         $account = Account::loadById($id);
         if ($account) {

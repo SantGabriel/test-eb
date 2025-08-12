@@ -9,8 +9,8 @@ class Event
     public function __construct(
         private Operation $type,
         private float $amount,
-        private int|null $origin = null,
-        private int|null $destination = null)
+        private string|null $origin = null,
+        private string|null $destination = null)
     {
     }
 
@@ -35,12 +35,12 @@ class Event
         return $this->amount;
     }
 
-    public function getOrigin(): ?int
+    public function getOrigin(): ?string
     {
         return $this->origin;
     }
 
-    public function getDestination(): ?int
+    public function getDestination(): ?string
     {
         return $this->destination;
     }

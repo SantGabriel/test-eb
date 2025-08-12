@@ -15,11 +15,11 @@ class Account
         $this->balance = $balance;
     }
 
-    public static function exists($id) : bool {
+    public static function exists(string $id) : bool {
         return DB::table('account')->where('id', $id)->exists();
     }
 
-    public static function loadById($id) : Account|null {
+    public static function loadById(string $id) : Account|null {
         $data = DB::table('account')->where('id', $id)->first();
         return self::load( (array) $data);
     }
@@ -35,7 +35,7 @@ class Account
         return new Account($id, $balance);
     }
 
-    public function getId() : int
+    public function getId() : string
     {
         return $this->id;
     }

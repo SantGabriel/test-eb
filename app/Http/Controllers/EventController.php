@@ -34,6 +34,8 @@ class EventController
                  * @var array{originAccount:Account,destinationAccount:Account} $eventResult
                  * */
                 $response = $this->transferResponse($eventResult['originAccount'], $eventResult['destinationAccount']);
+            }else {
+                return response()->json(0, 409);
             }
             return response()->json($response, 201);
         }else{

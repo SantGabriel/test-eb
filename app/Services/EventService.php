@@ -9,26 +9,29 @@ use App\Models\Event;
 class EventService
 {
     public function event(Event $event) {
-        switch ($event->getType()) {
-            case Operation::DEPOSIT:
-                return $this->depositEvent($event->getAmount(), $event->getDestination());
-            case Operation::WITHDRAW:
-                return $this->withdrawEvent($event->getAmount(), $event->getOrigin());
-            case Operation::TRANSFER:
-                return $this->transferEvent($event->getAmount(), $event->getOrigin(), $event->getDestination());
-            default:
-                throw new \Exception("Invalid operation type");
+        try {        
+            switch ($event->getType()) {
+                case Operation::DEPOSIT:
+                    return $this->depositEvent($event->getAmount(), $event->getDestination());
+                case Operation::WITHDRAW:
+                    return $this->withdrawEvent($event->getAmount(), $event->getOrigin());
+                case Operation::TRANSFER:
+                    return $this->transferEvent($event->getAmount(), $event->getOrigin(), $event->getDestination());
+                default:
+                    return false;
+            }
+        } catch (\Exception $e) {
+            return false;
         }
     }
 
     private function depositEvent(float $amount, int $destination) : Account {        
-        $account = Account::loadById($destination);
-        if ($account) {
-            $account->addToBalance($amount);
+        $exists = Account::exists($destination);
+        if ($exists) {
             DB::table('account')
                 ->where('id', $destination)
                 ->update(['balance' => DB::raw('balance + ' . $amount)]);
-            return $account;
+            return Account::loadById($destination);
         } else {
             $account = new Account($destination, $amount);
             DB::table('account')->insert([
@@ -39,34 +42,33 @@ class EventService
         }
     }
 
-    private function withdrawEvent(float $amount, int $origin): Account|false {
-        $account = Account::loadById($origin);
-        if(!isset($account)) return false;
-        $account->subtractFromBalance($amount);  
+    private function withdrawEvent(float $amount, int $origin): Account|false {    
+        $exists = Account::exists($origin, true);
+        if($exists) return false;
         DB::table('account')
                 ->where('id', $origin)
                 ->update(['balance' => DB::raw('balance - ' . $amount)]);
-        return $account;
+        return Account::loadById($origin);
     }
 
     /**
      * @return array{originAccount:Account,destinationAccount:Account}
      */
     private function transferEvent(float $amount, int $origin, int $destination): array|false {
-        $originAccount = Account::loadById($origin);
-        $destinationAccount = Account::loadById($destination);
-        if(!isset($originAccount) || !isset($destinationAccount)) return false;
+        return DB::transaction(function () use ($amount, $origin, $destination) {       
+            $originAccountExists = Account::exists($origin);
+            $destinationAccountExists = Account::exists($destination);
+            if(!isset($originAccountExists) || !isset($destinationAccountExists)) return false;
+ 
+            DB::table('account')
+                    ->where('id', $destination)
+                    ->update(['balance' => DB::raw('balance + ' . $amount)]);
 
-        $destinationAccount->addToBalance($amount); 
-        DB::table('account')
-                ->where('id', $destination)
-                ->update(['balance' => DB::raw('balance + ' . $amount)]);
-
-        $originAccount->subtractFromBalance($amount);  
-        DB::table('account')
-                ->where('id', $origin)
-                ->update(['balance' => DB::raw('balance - ' . $amount)]);
-        
-        return ["originAccount" => $originAccount, "destinationAccount" => $destinationAccount];
+            DB::table('account')
+                    ->where('id', $origin)
+                    ->update(['balance' => DB::raw('balance - ' . $amount)]);
+            
+            return ["originAccount" => Account::loadById($origin), "destinationAccount" => Account::loadById($destination)];
+        });
     }
 }

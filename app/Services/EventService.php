@@ -61,13 +61,12 @@ class EventService
             if(!$originAccountExists) return false;
  
             DB::table('account')
-                    ->where('id', $destination)
-                    ->update(['balance' => DB::raw('balance + ' . $amount)]);
-
+                    ->where('id', $origin)
+                    ->update(['balance' => DB::raw('balance - ' . $amount)]);
             if ($destinationAccountExists) {
                 DB::table('account')
-                        ->where('id', $origin)
-                        ->update(['balance' => DB::raw('balance - ' . $amount)]);
+                        ->where('id', $destination)
+                        ->update(['balance' => DB::raw('balance + ' . $amount)]);
             }else {
                 DB::table('account')->insert([
                     'id' => $destination,

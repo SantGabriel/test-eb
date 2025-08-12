@@ -58,15 +58,22 @@ class EventService
         return DB::transaction(function () use ($amount, $origin, $destination) {       
             $originAccountExists = Account::exists($origin);
             $destinationAccountExists = Account::exists($destination);
-            if(!$originAccountExists || !$destinationAccountExists) return false;
+            if(!$originAccountExists) return false;
  
             DB::table('account')
                     ->where('id', $destination)
                     ->update(['balance' => DB::raw('balance + ' . $amount)]);
 
-            DB::table('account')
-                    ->where('id', $origin)
-                    ->update(['balance' => DB::raw('balance - ' . $amount)]);
+            if ($destinationAccountExists) {
+                DB::table('account')
+                        ->where('id', $origin)
+                        ->update(['balance' => DB::raw('balance - ' . $amount)]);
+            }else {
+                DB::table('account')->insert([
+                    'id' => $destination,
+                    'balance' => $amount
+                ]);
+            }
             
             return ["originAccount" => Account::loadById($origin), "destinationAccount" => Account::loadById($destination)];
         });

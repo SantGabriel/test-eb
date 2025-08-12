@@ -15,6 +15,6 @@ class ResetController
     public function reset()
     {
         $this->resetService->reset();
-        return response()->json(['OK'], 200);
+        return response()->json('OK', 200);
     }
 }
